@@ -1,0 +1,15 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme {
+  --color-ink: #0a1624;
+  --color-muted: #65738a;
+  --color-line: #d9dee5;
+  --color-paper: #fffefb;
+  --color-paper-blue: #f4f8fd;
+  --color-canvas: #f4f3ef;
+  --color-blue: #1458e8;
+  --font-sans: "Avenir Next", "SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "SFMono-Regular", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+}

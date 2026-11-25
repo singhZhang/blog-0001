@@ -1,0 +1,17 @@
+:root {
+  --ink: #0a1624;
+  --muted: #65738a;
+  --line: #d9dee5;
+  --paper: #fffefb;
+  --paper-blue: #f4f8fd;
+  --canvas: #f4f3ef;
+  --blue: #1458e8;
+  --content-wide: 1400px;
+  --font-sans: "Avenir Next", "SF Pro Display", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "SFMono-Regular", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}

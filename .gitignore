@@ -1,0 +1,11 @@
+.DS_Store
+
+# 含数据库密码和后台令牌，只留在本机
+service/deploy/.env
+
+# 前端依赖与构建产物
+web/node_modules/
+web/dist/
+web/coverage/
+web/.env.local
+web/.env.*.local
