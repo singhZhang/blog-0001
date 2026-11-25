@@ -152,9 +152,52 @@ curl -fsS https://blog.example.com/api/categories
 
 ## 8. 以后发新版本
 
-接口代码有变化：
+推荐用 GitHub Actions：推送到 `main` 会自动发布前端和接口。也可在服务器上手动跑脚本。
+
+### 8.1 GitHub Actions（推荐）
+
+仓库已包含 `.github/workflows/deploy.yml`。首次启用前：
+
+1. 服务器已按上文完成 `git clone`、`.env`、Nginx 和首次手工发布
+2. 部署用户能免密执行 `docker`，以及对 `/var/www/blog` 的写入（或免密 `sudo`）
+3. 在 GitHub 仓库 **Settings → Secrets and variables → Actions** 中配置：
+
+| Secret | 必填 | 说明 |
+| --- | --- | --- |
+| `DEPLOY_HOST` | 是 | 服务器主机名或 IP |
+| `DEPLOY_USER` | 是 | SSH 用户 |
+| `DEPLOY_SSH_KEY` | 是 | 该用户的私钥（整段 PEM） |
+| `VITE_SITE_URL` | 是 | 前端构建用的站点地址，如 `https://blog.example.com` |
+| `DEPLOY_PATH` | 否 | 服务器仓库路径，默认 `/opt/blog` |
+| `DEPLOY_PORT` | 否 | SSH 端口，默认 `22` |
+| `DEPLOY_WEB_ROOT` | 否 | 静态文件目录，默认 `/var/www/blog` |
+| `BLOG_IMAGE` | 否 | 镜像名，默认 `blog-service:local` |
+
+之后每次推送到 `main`，Actions 会 SSH 进服务器执行 `service/deploy/deploy.sh all`。
+
+需要只发一端时：打开 Actions → **Deploy** → **Run workflow**，选择 `web` 或 `api`。
+
+### 8.2 服务器上手动发布
+
+两端都发：
 
 ```bash
+cd /opt/blog/service/deploy
+export VITE_SITE_URL=https://blog.example.com
+./deploy.sh all
+```
+
+只发前端或只发接口：
+
+```bash
+./deploy.sh web
+./deploy.sh api
+```
+
+等价的手工命令（与脚本相同）：
+
+```bash
+# 接口
 cd /opt/blog
 git pull
 cd service
@@ -162,11 +205,8 @@ docker build -t blog-service:local .
 cd deploy
 docker compose up -d
 curl -fsS http://127.0.0.1:8080/api/health
-```
 
-只有前端变化：
-
-```bash
+# 前端
 cd /opt/blog
 git pull
 cd web

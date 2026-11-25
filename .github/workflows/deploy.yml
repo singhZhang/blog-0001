@@ -1,0 +1,74 @@
+# 推送到 main 时在服务器上发布前端和接口；也可手动只发其中一项。
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 发布范围
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - web
+          - api
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to server
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Resolve deploy target
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "target=${{ inputs.target }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "target=all" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          VITE_SITE_URL: ${{ secrets.VITE_SITE_URL }}
+          DEPLOY_WEB_ROOT: ${{ secrets.DEPLOY_WEB_ROOT }}
+          BLOG_IMAGE: ${{ secrets.BLOG_IMAGE }}
+          DEPLOY_TARGET: ${{ steps.scope.outputs.target }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script_stop: true
+          envs: DEPLOY_PATH,VITE_SITE_URL,DEPLOY_WEB_ROOT,BLOG_IMAGE,DEPLOY_TARGET
+          script: |
+            set -euo pipefail
+            DEPLOY_PATH="${DEPLOY_PATH:-/opt/blog}"
+            if [ -z "${VITE_SITE_URL:-}" ]; then
+              echo "缺少 GitHub Secret: VITE_SITE_URL" >&2
+              exit 1
+            fi
+            if [ ! -d "$DEPLOY_PATH/.git" ]; then
+              echo "服务器上找不到仓库: $DEPLOY_PATH" >&2
+              echo "请先按 service/deploy/README.md 完成首次部署（git clone、.env、Nginx）" >&2
+              exit 1
+            fi
+            cd "$DEPLOY_PATH"
+            git fetch origin
+            git checkout main
+            git pull --ff-only origin main
+            chmod +x service/deploy/deploy.sh service/deploy/deploy-web.sh service/deploy/deploy-api.sh
+            export VITE_SITE_URL
+            export DEPLOY_WEB_ROOT="${DEPLOY_WEB_ROOT:-/var/www/blog}"
+            export BLOG_IMAGE="${BLOG_IMAGE:-blog-service:local}"
+            ./service/deploy/deploy.sh "$DEPLOY_TARGET"

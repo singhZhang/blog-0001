@@ -8,7 +8,7 @@
   └── /api          Go 接口，读写 MySQL
 ```
 
-线上由 Nginx 提供前端静态文件，并把 `/api` 转到本机接口。完整步骤见 [service/deploy/README.md](service/deploy/README.md)。
+线上由 Nginx 提供前端静态文件，并把 `/api` 转到本机接口。完整步骤见 [service/deploy/README.md](service/deploy/README.md)。推送到 `main` 后由 GitHub Actions 自动打包前端并重启接口，Secrets 与手动脚本说明也在该文档的「以后发新版本」一节。
 
 ## 目录
 
